@@ -21,6 +21,6 @@
     "types": ["node"],
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFalltailoverCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false
   }
 }
