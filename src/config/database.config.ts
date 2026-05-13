@@ -3,7 +3,6 @@ import { databaseSchema } from '../schema/database.schema';
 
 export const databaseConfig = registerAs('database', () => {
   const result = databaseSchema.safeParse(process.env);
-  console.log(result.data);
 
   if (!result.success) {
     throw new Error(
