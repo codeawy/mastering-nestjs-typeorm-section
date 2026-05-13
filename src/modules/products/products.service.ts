@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,27 +12,50 @@ export class ProductsService {
     private readonly productRepository: Repository<Product>,
   ) {}
 
-  create(createProductDto: CreateProductDto) {
-    return {
-      status: 'success',
-      message: 'Product created successfully',
-      data: createProductDto,
-    };
+  async create(createProductDto: CreateProductDto) {
+    const product = this.productRepository.create(createProductDto);
+    return await this.productRepository.save(product);
   }
 
   async findAll(): Promise<Product[]> {
-    return this.productRepository.find();
+    return this.productRepository.find({
+      select: ['id', 'title', 'price'],
+      order: { createdAt: 'DESC' }, // * DESC => newest to oldest
+    });
   }
 
-  findOne(id: string) {
-    return this.productRepository.findOne({ where: { id } });
+  async findOne(id: string): Promise<Product | null> {
+    const product = await this.productRepository.findOne({
+      where: { id },
+      select: ['id', 'title', 'price'],
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Product with id ${id} not found`);
+    }
+
+    return product;
   }
 
   update(id: number, updateProductDto: UpdateProductDto) {
     return `This action updates a #${id} product`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: string): Promise<{ status: string; message: string }> {
+    // * find the product to remove
+    const productToRemove = await this.productRepository.findOne({
+      where: { id },
+    });
+
+    if (!productToRemove) {
+      throw new NotFoundException(`Product with id ${id} not found`);
+    }
+
+    // * remove the product
+    await this.productRepository.remove(productToRemove);
+    return {
+      status: 'success',
+      message: `Product with id ${id} has been removed`,
+    };
   }
 }

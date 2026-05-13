@@ -34,7 +34,4 @@ export class CreateProductDto {
   @ValidateNested()
   @Type(() => ProductDetailsDto)
   details!: ProductDetailsDto;
-
-  @IsStrongPassword()
-  password!: string;
 }
